@@ -31,7 +31,9 @@ Route.get('/favoritos', async () => {
 })
 
 Route.get('/favoritos/:id', async ({ params, response }) => {
+  console.log(params.id)
   let favoritoEncontrado = favoritos.find((favorito) => favorito.id == params.id)
+  console.log(favoritoEncontrado)
   if (favoritoEncontrado == undefined)
   return response.status(404)
   return favoritoEncontrado
@@ -43,8 +45,38 @@ Route.get('/favoritos/:nome', async ({ params }) => {
 
 Route.post('/favoritos', async ({request,response})=>{
   const {nome,url,importante}=request.body()
+  if(nome==undefined || url==undefined|| importante==undefined){
+    return response.status(400)
+  }
+  //criar favorito
   const newFavorito={id:favoritos.length+1,nome,url,importante}
   favoritos.push(newFavorito)
   return response.status(201).send(newFavorito)
 })
 
+//put
+Route.put('/favoritos/:id', async ({request, params, response}) => {
+  const {nome, url, importante}= request.body()
+    let favoritoEncontrado = favoritos.find((favorito) => favorito.id == params.id)
+    if (!favoritoEncontrado)
+      return response.status(404)
+    favoritoEncontrado.nome=nome
+    favoritoEncontrado.url=url
+    favoritoEncontrado.importante=importante
+
+    favoritos[params.id]=favoritoEncontrado
+    return response.status(200).send(favoritoEncontrado)
+})
+
+//delete 
+Route.delete('/favoritos/:id', async ({ params, response }) => {
+  const favoritoIndex = favoritos.findIndex((favorito) => favorito.id == params.id);
+  if (favoritoIndex !== -1) {
+    favoritos.splice(favoritoIndex, 1);
+    return response.status(200).send({ message: 'Favorito deletado com sucesso' });
+  } else {
+    return response.status(400).send({ message: 'Favorito inexistente' });
+  }
+});
+
+Route.resource('favoritao','FavoritosController').apiOnly()
